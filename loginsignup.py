@@ -82,7 +82,9 @@ ScreenManager:
         text: 'Login'
         size_hint: (0.3, 0.08)
         pos_hint: {'center_x': 0.5, 'center_y': 0.3}
-        on_press: app.login()
+        on_press: 
+            app.login()
+            app.username_changer()
 
     MDTextButton:
         text: 'Create an account'
@@ -183,7 +185,8 @@ class LoginApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.strng = Builder.load_string(help_str)
-        self.url="https://skill-workout-tracker-default-rtdb.firebaseio.com/.json"
+        self.auth = 'Kew8mzt1nv6YaadgWRDBNdwSaYbRJGfDSHLbn4nJ'
+        self.url = "https://skill-workout-tracker-default-rtdb.firebaseio.com/.json"
         return self.strng
 
     def signup(self):
@@ -202,13 +205,16 @@ class LoginApp(MDApp):
             self.dialog.open()
         else:
             print(signupEmail, signupPassword)
-            signup_info = str({f'\"{signupEmail}\":{{"Password":\"{signupPassword}\","Username":\"{signupUsername}\"}}'})
+            signup_info = str(
+                {f'\"{signupEmail}\":{{"Password":\"{signupPassword}\","Username":\"{signupUsername}\"}}'})
             signup_info = signup_info.replace(".", "-")
             signup_info = signup_info.replace("\'", "")
             to_database = json.loads(signup_info)
             print((to_database))
-            requests.patch(url=self.url,json=to_database)
-            self.strng.get_screen('loginscreen').manager.current='loginscreen'
+            requests.patch(url=self.url, json=to_database)
+            self.strng.get_screen('loginscreen').manager.current = 'loginscreen'
+
+
     def login(self):
         loginEmail = self.strng.get_screen('loginscreen').ids.login_email.text
         loginPassword = self.strng.get_screen('loginscreen').ids.login_password.text
@@ -216,10 +222,24 @@ class LoginApp(MDApp):
         self.login_check = False
         supported_loginEmail = loginEmail.replace('.', '-')
         supported_loginPassword = loginPassword.replace('.', '-')
-        print(supported_loginEmail, supported_loginPassword)
+        request = requests.get(self.url + '?auth=' + self.auth)
+        data = request.json()
+        email = set()
+        for key, value in data.items():
+            email.add(key)
+        if supported_loginEmail in email and supported_loginPassword == data[supported_loginEmail]['Password']:
+            self.username = data[supported_loginEmail]['Username']
+            self.login_check = True
+            self.strng.get_screen('mainscreen').manager.current = 'mainscreen'
+        else:
+            print("user no longer exists")
+
 
     def close_username_dialog(self, obj):
-        self.dialog.dismiss()
+                 self.dialog.dismiss()
+    def username_changer(self):
+             if self.login_check:
+                 self.strng.get_screen('mainscreen').ids.username_info.text = f"welcome {self.username}"
 
 
 LoginApp().run()
