@@ -10,6 +10,7 @@ MDScreenManager:
     HomeScreen:
     LoginScreen:
     SignupScreen:
+    WelcomeScreen:
 
 <HomeScreen>:
     name: "home"
@@ -60,13 +61,13 @@ MDScreenManager:
             text_color: (1, 1, 1, 1)
 
         MDTextField:
-            id:email
+            id: email
             hint_text: "Enter Email"
             icon_right: "account"
             mode: "rectangle"
 
         MDTextField:
-            id:password
+            id: password
             hint_text: "Enter Password"
             icon_right: "lock"
             mode: "rectangle"
@@ -77,7 +78,6 @@ MDScreenManager:
             pos_hint: {"center_x": 0.5}
             size_hint_x: 0.5
             on_release: app.receive_data(email.text, password.text)
-           
 
         MDTextButton:
             text: "Create an account"
@@ -94,7 +94,6 @@ MDScreenManager:
 
         MDLabel:
             text: "Signup"
-            
             halign: "center"
             font_style: "H4"
             theme_text_color: "Custom"
@@ -102,7 +101,7 @@ MDScreenManager:
 
         MDTextField:
             hint_text: "Enter Username"
-            id:username
+            id: username
             icon_right: "account"
             mode: "rectangle"
 
@@ -123,12 +122,34 @@ MDScreenManager:
             text: "Signup"
             pos_hint: {"center_x": 0.5}
             size_hint_x: 0.5
-            on_release: app.send_data(username.text,email.text, password.text)
+            on_release: app.send_data(username.text, email.text, password.text)
 
         MDTextButton:
             text: "Already have an account?"
             pos_hint: {"center_x": 0.5}
             on_release: app.root.current = "login"
+
+<WelcomeScreen>:
+    name: "welcome"
+
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "20dp"
+        spacing: "20dp"
+
+        MDLabel:
+            id: welcome_label
+            text: "Welcome!"
+            halign: "center"
+            font_style: "H4"
+            theme_text_color: "Custom"
+            text_color: (1, 1, 1, 1)
+
+        MDRaisedButton:
+            text: "Logout"
+            pos_hint: {"center_x": 0.5}
+            size_hint_x: 0.5
+            on_release: app.root.current = "home"
 '''
 
 class HomeScreen(MDScreen):
@@ -140,6 +161,9 @@ class LoginScreen(MDScreen):
 class SignupScreen(MDScreen):
     pass
 
+class WelcomeScreen(MDScreen):
+    pass
+
 class SkillWorkoutApp(MDApp):
     def build(self):
         # Set the app theme to dark and use a primary palette
@@ -149,7 +173,6 @@ class SkillWorkoutApp(MDApp):
         # Load the KV layout
         return Builder.load_string(KV)
 
-#this is to get data off database
     def receive_data(self, email, password):
         db = mysql.connector.connect(
             host="localhost",
@@ -164,13 +187,16 @@ class SkillWorkoutApp(MDApp):
         email_list = [i[0] for i in cursor.fetchall()]
 
         if email in email_list and email != '':
-
-            query = "SELECT password FROM logindata WHERE email = %s"
+            # Fetch the password and username for the email
+            query = "SELECT password, username FROM logindata WHERE email = %s"
             cursor.execute(query, (email,))
+            result = cursor.fetchone()  # Fetch the first result
 
-            db_password = cursor.fetchone()  # Fetch the first result
-            if db_password and password == db_password[0]:
-                print("You have successfully logged in.")
+            if result and password == result[0]:
+                username = result[1]
+                print(f"Welcome, {username}!")
+                self.set_welcome_message(username)
+                self.root.current = "welcome"
             else:
                 print("Incorrect password.")
         else:
@@ -178,8 +204,7 @@ class SkillWorkoutApp(MDApp):
 
         db.close()
 
-    def send_data(self,username, email, password):
-        # Connect to the database
+    def send_data(self, username, email, password):
         db = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -189,15 +214,17 @@ class SkillWorkoutApp(MDApp):
         cursor = db.cursor()
 
         # Insert data into the database
-        query = "INSERT INTO logindata (username,email, password) VALUES (%s, %s, %s)"
-        cursor.execute(query, (username,email, password))
+        query = "INSERT INTO logindata (username, email, password) VALUES (%s, %s, %s)"
+        cursor.execute(query, (username, email, password))
         db.commit()
         print("Data sent:", username, email, password)
-        username = ' '
-        email = ' '
-        password = ' '
 
         db.close()
+
+    def set_welcome_message(self, username):
+        # Access the welcome screen and set the welcome label's text
+        welcome_screen = self.root.get_screen("welcome")
+        welcome_screen.ids.welcome_label.text = f"Welcome, {username}!"
 
 if __name__ == "__main__":
     SkillWorkoutApp().run()
