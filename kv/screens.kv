@@ -1,0 +1,45 @@
+ScreenManager:
+    WelcomeScreen:
+    LoginScreen:
+    SignupScreen:
+    MainScreen:
+
+<WelcomeScreen>:
+    name: 'welcomescreen'
+    MDLabel:
+        text: 'Skill'
+        font_style: 'H3'
+        halign: 'center'
+        pos_hint: {'center_y': 0.8}
+    MDLabel:
+        text: 'And'
+        font_style: 'H3'
+        halign: 'center'
+        pos_hint: {'center_y': 0.7}
+    MDLabel:
+        text: 'Workout Tracker'
+        font_style: 'H3'
+        halign: 'center'
+        pos_hint: {'center_y': 0.6}
+
+    MDRaisedButton:
+        text: 'Login'
+        pos_hint: {'center_x': 0.35, 'center_y': 0.3}
+        size_hint: (0.25, 0.08)
+        on_press:
+            root.manager.current = 'loginscreen'
+            root.manager.transition.direction = 'left'
+    MDRaisedButton:
+        text: 'Signup'
+        pos_hint: {'center_x': 0.65, 'center_y': 0.3}
+        size_hint: (0.25, 0.08)
+        on_press:
+            root.manager.current = 'signupscreen'
+            root.manager.transition.direction = 'left'
+
+<LoginScreen>:
+    # similar to your original structure
+<SignupScreen>:
+    # similar to your original structure
+<MainScreen>:
+    # similar to your original structure
