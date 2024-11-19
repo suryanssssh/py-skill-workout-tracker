@@ -2,6 +2,10 @@ from kivy.lang import Builder
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.screenmanager import MDScreenManager
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.label import MDLabel
+from kivymd.uix.list import MDList, OneLineListItem
+from kivymd.uix.card import MDCard
 import mysql.connector
 
 KV = '''
@@ -145,11 +149,55 @@ MDScreenManager:
             theme_text_color: "Custom"
             text_color: (1, 1, 1, 1)
 
-        MDRaisedButton:
-            text: "Logout"
-            pos_hint: {"center_x": 0.5}
-            size_hint_x: 0.5
-            on_release: app.root.current = "home"
+        MDGridLayout:
+            cols: 2
+            spacing: "10dp"
+            size_hint_y: None
+            height: self.minimum_height
+
+            MDCard:
+                orientation: "vertical"
+                padding: "10dp"
+                size_hint: None, None
+                size: "150dp", "100dp"
+                ripple_behavior: True
+                MDLabel:
+                    text: "Boxing"
+                    halign: "center"
+                    font_style: "H6"
+
+            MDCard:
+                orientation: "vertical"
+                padding: "10dp"
+                size_hint: None, None
+                size: "150dp", "100dp"
+                ripple_behavior: True
+                MDLabel:
+                    text: "Calisthenics"
+                    halign: "center"
+                    font_style: "H6"
+
+            MDCard:
+                orientation: "vertical"
+                padding: "10dp"
+                size_hint: None, None
+                size: "150dp", "100dp"
+                ripple_behavior: True
+                MDLabel:
+                    text: "Hypertrophy"
+                    halign: "center"
+                    font_style: "H6"
+
+        MDLabel:
+            text: "Recent Activity"
+            halign: "center"
+            font_style: "H5"
+            size_hint_y: None
+            height: "40dp"
+
+        ScrollView:
+            MDList:
+                id: recent_activity_list
 '''
 
 class HomeScreen(MDScreen):
@@ -196,6 +244,7 @@ class SkillWorkoutApp(MDApp):
                 username = result[1]
                 print(f"Welcome, {username}!")
                 self.set_welcome_message(username)
+                self.set_recent_activity()
                 self.root.current = "welcome"
             else:
                 print("Incorrect password.")
@@ -225,6 +274,15 @@ class SkillWorkoutApp(MDApp):
         # Access the welcome screen and set the welcome label's text
         welcome_screen = self.root.get_screen("welcome")
         welcome_screen.ids.welcome_label.text = f"Welcome, {username}!"
+
+    def set_recent_activity(self):
+        # Use demo data to populate the recent activity list
+        demo_data = ["Push-ups: 50 reps", "Pull-ups: 15 reps", "Squats: 70 kg x 8 reps"]
+        recent_activity_list = self.root.get_screen("welcome").ids.recent_activity_list
+        recent_activity_list.clear_widgets()
+
+        for activity in demo_data:
+            recent_activity_list.add_widget(OneLineListItem(text=activity))
 
 if __name__ == "__main__":
     SkillWorkoutApp().run()
